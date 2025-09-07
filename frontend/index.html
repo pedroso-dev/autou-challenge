@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classificador de E-mails - Mateus Pedroso</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Classificador de E-mails</h1>
+      <p>Automatize a classificação e resposta de e-mails com IA.</p>
+    </header>
+
+    <main>
+      <section class="form-container">
+        <h2>Insira o Conteúdo do E-mail</h2>
+        <textarea
+          id="email-content"
+          placeholder="Cole o texto do seu e-mail aqui..."
+          rows="10"
+        ></textarea>
+        <button id="submit-btn">Classificar e Sugerir Resposta</button>
+      </section>
+
+      <section class="results-container">
+        <!-- <h2>Resultado</h2> -->
+        <div id="loading" class="hidden">
+          <div class="spinner"></div>
+          <p>Analisando e-mail... Aguarde...</p>
+        </div>
+        <div id="results" class="hidden">
+          <h2>Resultado</h2>
+          <div class="result-item">
+            <h3>Categoria:</h3>
+            <p id="category-result"></p>
+          </div>
+          <div class="result-item">
+            <h3>Resposta Sugerida:</h3>
+            <p id="response-result"></p>
+          </div>
+        </div>
+        <div id="error-message" class="hidden">
+          <p>Ocorreu um erro ao processar o e-mail. Tente novamente.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer><p>&copy; 2025 Mateus Pedroso. Desafio AutoU.</p></footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
