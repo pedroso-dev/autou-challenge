@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
 from transformers import pipeline
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-classifier = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+# classifier = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+candidate_labels = ["produtivo", "improdutivo"]
 
 generator = pipeline("text-generation", model="gpt2")
 
@@ -18,22 +22,18 @@ def classify_email():
         return jsonify({'error': 'Nenhum conteúdo de e-mail fornecido'}), 400
 
     email_content = request.json['email_content']
+    classification_result = classifier(email_content, candidate_labels)
+    category = classification_result['labels'][0].upper()
+    suggested_response = ""
 
-    classification_result = classifier(email_content)[0]
-    label = classification_result['label'].upper()
-
-    if label == 'POSITIVE':
-        category = "PRODUTIVO"
-        
-        # suggested_response = RESPONSES["PRODUTIVO"]
-        
-        # Gerar uma resposta mais inteligente
+    if category == 'PRODUTIVO':
         prompt = f"Responda ao seguinte e-mail de forma profissional: '{email_content}'"
-        generated_response = generator(prompt, max_length=100, num_return_sequences=1)[0]['generated_text']
-        suggested_response = generated_response.strip()
-
+        generated_response = generator(prompt, max_length=150, num_return_sequences=1)[0]['generated_text']
+        prompt_end_index = generated_response.find(email_content) + len(email_content)
+        suggested_response = generated_response[prompt_end_index:].strip()        
+        if len(suggested_response) < 20 or suggested_response.lower().startswith("Olá,"):
+            suggested_response = RESPONSES["PRODUTIVO"]
     else:
-        category = "IMPRODUTIVO"
         suggested_response = RESPONSES["IMPRODUTIVO"]
 
     response = {
