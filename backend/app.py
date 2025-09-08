@@ -7,9 +7,7 @@ CORS(app)
 
 # classifier = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-candidate_labels = ["produtivo", "improdutivo"]
-
-generator = pipeline("text-generation", model="gpt2")
+candidate_labels = ["requer ação", "não requer ação", "comunicado"]
 
 RESPONSES = {
     "PRODUTIVO": "Prezado, sua solicitação foi recebida e está em andamento. Em breve, enviaremos uma atualização.",
@@ -23,17 +21,16 @@ def classify_email():
 
     email_content = request.json['email_content']
     classification_result = classifier(email_content, candidate_labels)
-    category = classification_result['labels'][0].upper()
-    suggested_response = ""
-
-    if category == 'PRODUTIVO':
-        prompt = f"Responda ao seguinte e-mail de forma profissional: '{email_content}'"
-        generated_response = generator(prompt, max_length=150, num_return_sequences=1)[0]['generated_text']
-        prompt_end_index = generated_response.find(email_content) + len(email_content)
-        suggested_response = generated_response[prompt_end_index:].strip()        
-        if len(suggested_response) < 20 or suggested_response.lower().startswith("Olá,"):
-            suggested_response = RESPONSES["PRODUTIVO"]
+    
+    predicted_label = classification_result['labels'][0]
+    
+     # Se a predição principal for "requer ação", é produtivo.
+    if predicted_label == "requer ação":
+        category = "PRODUTIVO"
+        suggested_response = RESPONSES["PRODUTIVO"]
+    # Caso contrário, consideramos improdutivo, mesmo que seja "comunicado"
     else:
+        category = "IMPRODUTIVO"
         suggested_response = RESPONSES["IMPRODUTIVO"]
 
     response = {
